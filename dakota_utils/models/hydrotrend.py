@@ -182,7 +182,8 @@ class HydroTrend(object):
                          '--in-dir', self._input_dir, \
                          '--out-dir', self._output_dir])
 
-    def load(self, output_file):
+    @staticmethod
+    def load(output_file):
         '''
         Reads a column of text containing HydroTrend output. Returns a
         numpy array, or None on an error.
