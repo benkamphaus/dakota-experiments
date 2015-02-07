@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import numpy as np
+from collections import defaultdict
 from ..read import get_labels
 from ..write import write_results
 
@@ -198,21 +199,19 @@ class HydroTrend(object):
         Calculates the statistic (sum, mean, ...) used in the Dakota
         response function.
         '''
+        # dict of identifiers to stats functions which defaults to mean for
+        # unknown keys.
+        stats = defaultdict(lambda: np.mean, {"sum": np.sum,
+                                              "std": np.std,
+                                              "max": np.max,
+                                              "median": np.median,
+                                              "mean": np.mean})
         response = []
         for fname in self._output_files:
             shutil.copy(os.path.join(self._output_dir, fname), os.curdir)
             series = self.load(fname)
-            if series is not None:
-                if self._response_statistic == 'sum':
-                    response.append(np.sum(series))
-                elif self._response_statistic == 'std':
-                    response.append(np.std(series))
-                elif self._response_statistic == 'max':
-                    response.append(np.max(series))
-                elif self._response_statistic == 'median':
-                    response.append(np.median(series))
-                else:
-                    response.append(np.mean(series)) # 'mean' is default
+            if series:
+                response.append(stats[self._response_statistic](series))
             else:
                 response.append(float('nan'))
         return(response)
